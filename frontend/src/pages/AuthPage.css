@@ -1,0 +1,108 @@
+.auth-stage {
+  min-height: calc(100vh - 140px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-terminal-box {
+  width: 100%;
+  max-width: 460px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  padding: 32px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 24px) 0,
+    100% 24px,
+    100% 100%,
+    24px 100%,
+    0 calc(100% - 24px)
+  );
+}
+
+.terminal-status-line {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent-cyber);
+  margin-bottom: 16px;
+}
+
+.auth-heading {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.75rem;
+  margin-bottom: 8px;
+}
+
+.auth-subtext {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.auth-alert {
+  background-color: rgba(255, 0, 85, 0.14);
+  border-left: 3px solid var(--accent-secondary);
+  color: var(--accent-secondary);
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.field-group input {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  color: var(--text-primary);
+  padding: 12px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+}
+
+.field-group input:focus {
+  outline: none;
+  border-color: var(--accent-cyber);
+}
+
+.auth-submit-btn {
+  margin-top: 8px;
+  padding: 14px;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  background-color: var(--accent-primary);
+  color: #08090c;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+.auth-switch-btn {
+  margin-top: 18px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--accent-cyber);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}

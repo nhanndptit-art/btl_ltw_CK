@@ -1,0 +1,61 @@
+:root,
+[data-theme='dark'] {
+  --bg-primary: #08090c;
+  --bg-secondary: #11131a;
+  --bg-surface: #181b24;
+  --border-dim: #262b38;
+  --text-primary: #f3f5f8;
+  --text-secondary: #8a94a6;
+  --text-muted: #525b6c;
+  --accent-primary: #e6ff00;
+  --accent-secondary: #ff0055;
+  --accent-cyber: #00f0ff;
+  --rarity-common: #7f8c9a;
+  --rarity-rare: #00f0ff;
+  --rarity-epic: #d900ff;
+  --rarity-legendary: #ffb800;
+}
+
+[data-theme='light'] {
+  --bg-primary: #eceff4;
+  --bg-secondary: #ffffff;
+  --bg-surface: #e2e6f0;
+  --border-dim: #c5ccd9;
+  --text-primary: #0d1017;
+  --text-secondary: #4a5365;
+  --text-muted: #7b8496;
+  --accent-primary: #b8cc00;
+  --accent-secondary: #e0004b;
+  --accent-cyber: #008899;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.cyber-app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-image: radial-gradient(var(--border-dim) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.cyber-main-container {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+  flex: 1;
+}

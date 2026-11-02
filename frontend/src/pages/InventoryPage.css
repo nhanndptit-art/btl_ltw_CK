@@ -1,0 +1,77 @@
+.inventory-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.inventory-top-bar {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.inventory-title {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.65rem;
+  margin-bottom: 4px;
+}
+
+.inventory-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.rarity-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-btn {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.filter-btn.active {
+  background-color: var(--accent-primary);
+  color: #08090c;
+  border-color: var(--accent-primary);
+}
+
+.inventory-empty-box {
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--border-dim);
+  padding: 64px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.goto-gacha-link {
+  display: inline-block;
+  background-color: var(--accent-cyber);
+  color: #08090c;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 10px 20px;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}

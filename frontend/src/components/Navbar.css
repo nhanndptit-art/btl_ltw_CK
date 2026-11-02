@@ -1,0 +1,123 @@
+.cyber-navbar {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-dim);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.cyber-navbar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  height: 72px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.cyber-brand {
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.brand-bracket {
+  color: var(--accent-secondary);
+}
+
+.cyber-nav-links {
+  display: flex;
+  gap: 12px;
+}
+
+.cyber-nav-item {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  color: var(--text-secondary);
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.cyber-nav-item:hover {
+  color: var(--text-primary);
+  border-color: var(--border-dim);
+}
+
+.cyber-nav-item.active {
+  color: #08090c;
+  background-color: var(--accent-cyber);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.cyber-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-telemetry-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.telemetry-chip {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-dim);
+  padding: 6px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  display: flex;
+  gap: 6px;
+}
+
+.telemetry-label {
+  color: var(--text-secondary);
+}
+
+.pity-highlight {
+  color: var(--accent-secondary);
+  font-weight: 700;
+}
+
+.gem-highlight {
+  color: var(--accent-cyber);
+  font-weight: 700;
+}
+
+.operator-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.cyber-icon-btn,
+.cyber-logout-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-dim);
+  cursor: pointer;
+}
+
+.cyber-logout-btn {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+}
+
+.cyber-logout-btn:hover {
+  background-color: var(--accent-secondary);
+  color: #ffffff;
+}
