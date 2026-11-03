@@ -3,6 +3,9 @@ import { useDispatch } from 'react-redux';
 import { setUserSession } from '../store/authSlice.js';
 import './AuthPage.css';
 
+// Đặt ngoài component để không bị khởi tạo lại mỗi lần re-render
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const AuthPage = () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [username, setUsername] = useState('cyber_runner');
@@ -17,10 +20,11 @@ const AuthPage = () => {
     setErrorMsg('');
     setLoading(true);
 
-    const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+    // Đã bỏ '/api' ở đầu vì API_BASE_URL đã có sẵn '/api'
+    const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
 
     try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
