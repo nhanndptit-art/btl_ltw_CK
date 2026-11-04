@@ -128,7 +128,7 @@ export const rollGacha = async (req, res) => {
       [updatedGems, currentPity, userId]
     );
 
-    // 5. Cập nhật Kho đồ (user_inventory) & Ghi log lịch sử (gacha_logs)
+    // 5. Cập nhật Kho đồ (user_inventory) và ghi 1 log cho toàn bộ lượt quay
     for (const pulled of pulledCards) {
       await connection.execute(
         `INSERT INTO user_inventory (user_id, card_id, quantity)
@@ -136,19 +136,23 @@ export const rollGacha = async (req, res) => {
          ON DUPLICATE KEY UPDATE quantity = quantity + 1`,
         [userId, pulled.id]
       );
-
-      await connection.execute(
-        `INSERT INTO gacha_logs (user_id, card_id, rarity_pulled, pity_at_pull, is_pity_triggered)
-         VALUES (?, ?, ?, ?, ?)`,
-        [
-          userId,
-          pulled.id,
-          pulled.rarity,
-          pulled.pity_at_pull,
-          pulled.is_pity_triggered ? 1 : 0,
-        ]
-      );
     }
+
+    await connection.execute(
+      `INSERT INTO gacha_logs (user_id, roll_results)
+       VALUES (?, ?)`,
+      [
+        userId,
+        JSON.stringify(
+          pulledCards.map((pulled) => ({
+            item_id: pulled.id,
+            rarity: pulled.rarity,
+            pity_at_pull: pulled.pity_at_pull,
+            is_pity_triggered: pulled.is_pity_triggered,
+          }))
+        ),
+      ]
+    );
 
     // 6. Lấy lại toàn bộ Inventory mới nhất của User sau khi thêm thẻ
     const [updatedInventory] = await connection.execute(

@@ -20,7 +20,7 @@ const Navbar = () => {
     <header className="cyber-navbar">
       <div className="cyber-navbar-inner">
         <Link to="/" className="cyber-brand">
-          <span className="brand-bracket">//</span> NEURAL_GACHA
+          <span className="brand-bracket">//</span> X_GACHA
         </Link>
 
         {user && (

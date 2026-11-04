@@ -1,6 +1,20 @@
 import React from 'react';
 import './CardItem.css';
 
+const cardAssetUrls = import.meta.glob('../assets/cards/*', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+});
+
+const getCardImageUrl = (imageUrl) => {
+  if (!imageUrl) return imageUrl;
+
+  const fileName = imageUrl.split('/').pop();
+  const assetPath = `../assets/cards/${fileName}`;
+  return cardAssetUrls[assetPath] || imageUrl;
+};
+
 const CardItem = ({ card, showQuantity = false }) => {
   const rarityClass = `rarity-${card.rarity.toLowerCase()}`;
 
@@ -21,7 +35,7 @@ const CardItem = ({ card, showQuantity = false }) => {
 
       <div className="cyber-card-visual">
         <img
-          src={card.image_url}
+          src={getCardImageUrl(card.image_url)}
           alt={card.name}
           onError={handleImageError}
           loading="lazy"

@@ -22,7 +22,7 @@ mysql --version
 ## 1. Clone dự án
 
 ```bash
-git clone <URL_REPOSITORY>
+git clone <https://github.com/nhanndptit-art/btl_ltw_CK>
 cd webCK
 ```
 
