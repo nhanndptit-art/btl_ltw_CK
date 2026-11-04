@@ -2,6 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import apiRoutes from './routes/apiRoutes.js';
+import { startGachaLogCleanupJob } from './jobs/gachaLogCleanup.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,6 +23,8 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api', apiRoutes);
+
+startGachaLogCleanupJob();
 
 app.listen(PORT, () => {
   console.log(`[NEURAL SERVER] Đang chạy tại http://localhost:${PORT}`);
