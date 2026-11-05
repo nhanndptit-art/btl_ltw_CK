@@ -25,7 +25,7 @@ mysql --version
 git clone <https://github.com/nhanndptit-art/btl_ltw_CK>
 cd webCK
 ```
-
+<!-- tạm bỏ qua, được hướng dẫn trực tiếp bởi Nhân
 ## 2. Cài đặt và khởi tạo database
 
 Tạo database, bảng và dữ liệu mẫu bằng file `database.sql`:
@@ -39,6 +39,7 @@ Nếu dùng Windows PowerShell và lệnh chuyển hướng ở trên không ho�
 ```powershell
 Get-Content .\database.sql | mysql -u root -p
 ```
+-->
 
 ## 3. Cấu hình backend
 
