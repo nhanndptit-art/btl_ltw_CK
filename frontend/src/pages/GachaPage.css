@@ -205,6 +205,190 @@
   font-family: 'Chakra Petch', sans-serif;
 }
 
+.results-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.history-toggle-btn,
+.history-pagination button {
+  border: 1px solid var(--accent-cyber);
+  background: transparent;
+  color: var(--accent-cyber);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 9px;
+}
+
+.history-toggle-btn:hover,
+.history-pagination button:not(:disabled):hover {
+  background: var(--accent-cyber);
+  color: var(--bg-primary);
+}
+
+.history-pagination button:disabled {
+  border-color: var(--border-dim);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.gacha-history-panel {
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(760px, calc(100vh - 48px));
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  border-left: 3px solid var(--accent-cyber);
+  padding: 16px;
+}
+
+.gacha-history-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: rgba(8, 9, 12, 0.78);
+}
+
+.history-panel-header,
+.history-entry-meta,
+.history-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.history-panel-header {
+  color: var(--accent-cyber);
+  font-size: 0.75rem;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.history-close-btn {
+  border: 1px solid var(--accent-secondary);
+  background: transparent;
+  color: var(--accent-secondary);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 5px 8px;
+}
+
+.history-close-btn:hover {
+  background: var(--accent-secondary);
+  color: #ffffff;
+}
+
+.history-total {
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  margin-top: 10px;
+  text-align: right;
+}
+
+.history-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.history-entry {
+  border: 1px solid var(--border-dim);
+  padding: 10px;
+}
+
+.history-entry-meta {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  margin-bottom: 8px;
+}
+
+.history-entry-meta strong {
+  color: var(--text-primary);
+}
+
+.history-card-list {
+  display: grid;
+  gap: 5px;
+}
+
+.history-card {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr) 80px auto;
+  align-items: center;
+  gap: 8px;
+  border-left: 3px solid var(--border-dim);
+  background: var(--bg-surface);
+  padding: 6px 8px;
+  font-size: 0.73rem;
+}
+
+.history-card.rarity-legendary { border-left-color: var(--rarity-legendary); }
+.history-card.rarity-epic { border-left-color: var(--rarity-epic); }
+.history-card.rarity-rare { border-left-color: var(--rarity-rare); }
+
+.history-card-rarity,
+.history-card-pity,
+.history-pity-flag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+}
+
+.history-card-rarity { color: var(--text-secondary); }
+.history-card-name { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-card-pity { color: var(--text-muted); }
+.history-pity-flag { color: var(--rarity-legendary); text-align: right; }
+
+.history-status {
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  padding: 16px 0 4px;
+}
+
+.history-error { color: var(--accent-secondary); }
+
+.history-pagination {
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.history-pagination span {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 640px) {
+  .results-section-header,
+  .history-panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .history-total {
+    text-align: left;
+  }
+
+  .history-card {
+    grid-template-columns: 1fr auto;
+  }
+
+  .history-card-pity,
+  .history-pity-flag {
+    text-align: left;
+  }
+}
+
 .empty-roll-stage {
   background-color: var(--bg-secondary);
   border: 1px dashed var(--border-dim);

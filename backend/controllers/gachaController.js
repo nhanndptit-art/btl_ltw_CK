@@ -197,3 +197,77 @@ export const rollGacha = async (req, res) => {
     connection.release();
   }
 };
+
+export const getGachaHistory = async (req, res) => {
+  try {
+    const userId = Number(req.params.userId);
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const pageSize = 10;
+
+    if (!userId) {
+      return res.status(400).json({ message: 'Tài khoản người dùng không hợp lệ.' });
+    }
+
+    const [rows] = await pool.execute(
+      `SELECT
+         COALESCE(gl.roll_batch_id, CONCAT('legacy-', gl.id)) AS batch_id,
+         DATE_FORMAT(
+           CONVERT_TZ(gl.pulled_at, '+00:00', '+07:00'),
+           '%Y-%m-%dT%H:%i:%s+07:00'
+         ) AS pulled_at,
+         gl.roll_results
+       FROM gacha_logs gl
+       WHERE gl.user_id = ?
+       ORDER BY gl.pulled_at DESC, gl.id DESC`,
+      [userId]
+    );
+
+    const [cards] = await pool.execute(
+      `SELECT id, name, title, rarity, element, base_atk, base_def, image_url
+       FROM cards`
+    );
+    const cardsById = new Map(cards.map((card) => [card.id, card]));
+
+    const batches = [];
+    const batchMap = new Map();
+
+    for (const row of rows) {
+      const results = typeof row.roll_results === 'string'
+        ? JSON.parse(row.roll_results)
+        : row.roll_results;
+      const pulledCards = Array.isArray(results) ? results : [];
+
+      const batch = {
+        id: row.batch_id,
+        pulled_at: row.pulled_at,
+        pull_count: pulledCards.length,
+        cards: pulledCards.map((result) => ({
+          ...(cardsById.get(result.item_id) || {
+            id: result.item_id,
+            name: `CARD #${result.item_id}`,
+            title: 'Unknown card',
+            rarity: result.rarity,
+          }),
+          pity_at_pull: result.pity_at_pull,
+          is_pity_triggered: Boolean(result.is_pity_triggered),
+        })),
+      };
+
+      batchMap.set(row.batch_id, batch);
+      batches.push(batch);
+    }
+
+    const total = batches.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const currentPage = Math.min(page, totalPages);
+    const start = (currentPage - 1) * pageSize;
+
+    return res.status(200).json({
+      history: batches.slice(start, start + pageSize),
+      pagination: { page: currentPage, pageSize, total, totalPages },
+    });
+  } catch (error) {
+    console.error('Get Gacha History Error:', error);
+    return res.status(500).json({ message: 'Lỗi khi tải lịch sử triệu hồi.' });
+  }
+};

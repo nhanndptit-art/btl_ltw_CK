@@ -44,14 +44,14 @@ CREATE TABLE IF NOT EXISTS user_inventory (
 CREATE TABLE IF NOT EXISTS gacha_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    card_id INT NOT NULL,
-    rarity_pulled ENUM('Common', 'Rare', 'Epic', 'Legendary') NOT NULL,
-    pity_at_pull INT NOT NULL,
-    is_pity_triggered TINYINT(1) NOT NULL DEFAULT 0,
+    roll_batch_id CHAR(36) NULL,
+    roll_results JSON NOT NULL,
     pulled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_logs_card FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    CONSTRAINT fk_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Nếu database đã được tạo trước khi có lịch sử theo batch, chạy:
+-- ALTER TABLE gacha_logs ADD COLUMN roll_batch_id CHAR(36) NULL AFTER user_id;
 
 -- ============================================================================
 -- INSERT DỮ LIỆU MẪU: THẺ BÀI NHÂN VẬT (Đầy đủ 4 độ hiếm)
