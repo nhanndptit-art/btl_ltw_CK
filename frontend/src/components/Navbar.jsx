@@ -34,6 +34,14 @@ const Navbar = () => {
               TRẠM TRIỆU HỒI
             </NavLink>
             <NavLink
+              to="/bosses"
+              className={({ isActive }) =>
+                isActive ? 'cyber-nav-item active' : 'cyber-nav-item'
+              }
+            >
+              THÁP BOSS
+            </NavLink>
+            <NavLink
               to="/inventory"
               className={({ isActive }) =>
                 isActive ? 'cyber-nav-item active' : 'cyber-nav-item'
