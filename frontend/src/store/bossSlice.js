@@ -6,11 +6,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 // Gọi API lấy danh sách tầng
 export const fetchBossFloorsThunk = createAsyncThunk(
   'boss/fetchFloors',
-  async (userId, { rejectWithValue }) => {
+  async (userId, { dispatch, rejectWithValue }) => {
     try {
       const response = await fetch(`${API_BASE_URL}/bosses/${userId}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
+      dispatch(updateUserTelemetry(data));
       return data;
     } catch (error) {
       return rejectWithValue(error.message);

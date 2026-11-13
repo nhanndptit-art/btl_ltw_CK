@@ -17,13 +17,13 @@ const App = () => {
       <Navbar />
       <main className="cyber-main-container">
         <Routes>
-          <Route path="/" element={<AuthPage />} />
-          <Route path="/gacha" element={<GachaPage />} />
-          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/" element={user ? <Navigate to="/gacha" replace /> : <AuthPage />} />
+          <Route path="/gacha" element={user ? <GachaPage /> : <Navigate to="/" replace />} />
+          <Route path="/inventory" element={user ? <InventoryPage /> : <Navigate to="/" replace />} />
           
           {/* Đăng ký Route cho Tháp Boss */}
-          <Route path="/bosses" element={<BossPage />} />
-          <Route path="/bosses/:floorNumber" element={<BossPage />} />
+          <Route path="/bosses" element={user ? <BossPage /> : <Navigate to="/" replace />} />
+          <Route path="/bosses/:floorNumber" element={user ? <BossPage /> : <Navigate to="/" replace />} />
           
           {/* Trang 404 đón lõng mọi đường dẫn sai */}
           <Route path="*" element={<NotFoundPage />} />

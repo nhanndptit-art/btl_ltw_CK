@@ -21,15 +21,8 @@ export const registerUser = async (req, res) => {
     );
 
     if (existingUsers.length > 0) {
-      return res.status(201).json({
-        user: {
-          id: result.insertId,
-          username: cleanUsername,
-          gems: initialGems,
-          pity_count: 0,
-          highest_boss_floor: 0,
-          stamina: 100,
-        },
+      return res.status(409).json({
+        message: 'Tên đăng nhập đã tồn tại.',
       });
     }
 

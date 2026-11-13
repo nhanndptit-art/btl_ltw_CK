@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Migration an toàn cho database đã tồn tại trước khi thêm Tháp Boss:
+-- ALTER TABLE users
+--   ADD COLUMN IF NOT EXISTS highest_boss_floor INT NOT NULL DEFAULT 0,
+--   ADD COLUMN IF NOT EXISTS stamina INT NOT NULL DEFAULT 100;
+
 -- 2. Bảng danh mục Thẻ bài Nhân vật
 CREATE TABLE IF NOT EXISTS cards (
     id INT AUTO_INCREMENT PRIMARY KEY,
