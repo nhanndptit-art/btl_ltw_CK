@@ -15,10 +15,13 @@ const authSlice = createSlice({
       localStorage.setItem('cyber_user', JSON.stringify(action.payload));
     },
     updateUserTelemetry: (state, action) => {
-      const { gems, pity_count } = action.payload;
+      const { gems, pity_count, highest_boss_floor, stamina } = action.payload;
       if (state.user) {
-        state.user.gems = gems;
-        state.user.pity_count = pity_count;
+        if (gems !== undefined) state.user.gems = gems;
+        if (pity_count !== undefined) state.user.pity_count = pity_count;
+        if (highest_boss_floor !== undefined) state.user.highest_boss_floor = highest_boss_floor;
+        if (stamina !== undefined) state.user.stamina = stamina;
+        
         localStorage.setItem('cyber_user', JSON.stringify(state.user));
       }
     },

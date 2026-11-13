@@ -68,16 +68,27 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .telemetry-chip {
+  box-sizing: border-box;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-dim);
   padding: 6px 12px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85rem;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 6px;
+  min-width: 92px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.telemetry-chip:nth-child(2) {
+  min-width: 118px;
 }
 
 .telemetry-label {
@@ -86,6 +97,11 @@
 
 .pity-highlight {
   color: var(--accent-secondary);
+  font-weight: 700;
+}
+
+.stamina-highlight {
+  color: #ffb347;
   font-weight: 700;
 }
 

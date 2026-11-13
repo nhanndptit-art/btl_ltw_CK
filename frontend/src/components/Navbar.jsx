@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/authSlice.js';
 import { clearPullResults } from '../store/gachaSlice.js';
@@ -9,7 +9,9 @@ import './Navbar.css';
 const Navbar = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const { pathname } = useLocation();
   const { theme, toggleTheme } = useThemeContext();
+  const isBossSection = pathname.startsWith('/bosses');
 
   const handleLogout = () => {
     dispatch(clearPullResults());
@@ -34,6 +36,14 @@ const Navbar = () => {
               TRẠM TRIỆU HỒI
             </NavLink>
             <NavLink
+              to="/bosses"
+              className={({ isActive }) =>
+                isActive ? 'cyber-nav-item active' : 'cyber-nav-item'
+              }
+            >
+              THÁP BOSS
+            </NavLink>
+            <NavLink
               to="/inventory"
               className={({ isActive }) =>
                 isActive ? 'cyber-nav-item active' : 'cyber-nav-item'
@@ -48,9 +58,9 @@ const Navbar = () => {
           {user && (
             <div className="user-telemetry-bar">
               <div className="telemetry-chip">
-                <span className="telemetry-label">PITY:</span>
-                <span className="telemetry-value pity-highlight">
-                  {user.pity_count}/90
+                <span className="telemetry-label">{isBossSection ? 'STA:' : 'PITY:'}</span>
+                <span className={isBossSection ? 'telemetry-value stamina-highlight' : 'telemetry-value pity-highlight'}>
+                  {isBossSection ? `${user.stamina ?? 0}/100` : `${user.pity_count}/90`}
                 </span>
               </div>
               <div className="telemetry-chip">

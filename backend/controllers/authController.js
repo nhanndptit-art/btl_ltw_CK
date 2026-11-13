@@ -22,7 +22,7 @@ export const registerUser = async (req, res) => {
 
     if (existingUsers.length > 0) {
       return res.status(409).json({
-        message: 'Tên đăng nhập đã tồn tại trong mạng lưới Neural.',
+        message: 'Tên đăng nhập đã tồn tại.',
       });
     }
 
@@ -60,7 +60,7 @@ export const loginUser = async (req, res) => {
 
     const passwordHash = hashPassword(password);
     const [rows] = await pool.execute(
-      'SELECT id, username, gems, pity_count FROM users WHERE username = ? AND password_hash = ?',
+      'SELECT id, username, gems, pity_count, highest_boss_floor, stamina FROM users WHERE username = ? AND password_hash = ?',
       [username.trim(), passwordHash]
     );
 

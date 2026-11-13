@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { setUserSession } from '../store/authSlice.js';
 import './AuthPage.css';
 
@@ -14,6 +15,7 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,6 +38,7 @@ const AuthPage = () => {
       }
 
       dispatch(setUserSession(data.user));
+      navigate('/gacha', { replace: true });
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
