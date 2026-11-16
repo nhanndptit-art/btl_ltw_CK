@@ -1,10 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const savedUser = localStorage.getItem('cyber_user');
+const readSavedUser = () => {
+  try {
+    const savedUser = localStorage.getItem('cyber_user');
+    if (!savedUser) return null;
+
+    const parsedUser = JSON.parse(savedUser);
+    if (!parsedUser || typeof parsedUser !== 'object') return null;
+
+    return {
+      ...parsedUser,
+      role: parsedUser.role || 'user',
+    };
+  } catch {
+    localStorage.removeItem('cyber_user');
+    return null;
+  }
+};
+
 const savedToken = localStorage.getItem('cyber_token');
 
 const initialState = {
-  user: savedUser ? JSON.parse(savedUser) : null,
+  user: readSavedUser(),
   token: savedToken || null,
 };
 
