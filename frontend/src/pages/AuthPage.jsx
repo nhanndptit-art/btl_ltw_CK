@@ -9,8 +9,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 const AuthPage = () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [username, setUsername] = useState('cyber_runner');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('123456');
   const [errorMsg, setErrorMsg] = useState('');
+  const [showForgotPasswordHelp, setShowForgotPasswordHelp] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
@@ -27,7 +29,11 @@ const AuthPage = () => {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username,
+          password,
+          ...(!isLoginMode ? { email: email.trim() || null } : {}),
+        }),
       });
 
       const data = await response.json();
@@ -47,16 +53,6 @@ const AuthPage = () => {
     }
   };
 
-
-  const handleQuickDemoLogin = (demoRole) => {
-    const demoUser =
-      demoRole === 'admin'
-        ? { id: 4, username: 'admin_tuananh', role: 'admin', gems: 999999, pity_count: 0, stamina: 100 }
-        : { id: 1, username: 'cyber_runner', role: 'user', gems: 11185, pity_count: 85, stamina: 100 };
-
-    dispatch(setUserSession({ user: demoUser, token: 'demo-jwt-token' }));
-    navigate(demoRole === 'admin' ? '/admin' : '/gacha', { replace: true });
-  };
 
   return (
     <section className="auth-stage">
@@ -88,6 +84,20 @@ const AuthPage = () => {
             />
           </div>
 
+          {!isLoginMode && (
+            <div className="field-group">
+              <label htmlFor="email">EMAIL (KHÔNG BẮT BUỘC)</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                autoComplete="email"
+              />
+            </div>
+          )}
+
           <div className="field-group">
             <label htmlFor="password">MẬT MÃ TRUY CẬP (PASSWORD)</label>
             <input
@@ -100,6 +110,18 @@ const AuthPage = () => {
             />
           </div>
 
+          {isLoginMode && (
+            <div className="auth-forgot-row">
+              <button
+                type="button"
+                className="auth-forgot-btn"
+                onClick={() => setShowForgotPasswordHelp((visible) => !visible)}
+              >
+                Quên mật khẩu?
+              </button>
+            </div>
+          )}
+
           <button type="submit" className="auth-submit-btn" disabled={loading}>
             {loading
               ? 'ĐANG ĐỒNG BỘ...'
@@ -109,46 +131,11 @@ const AuthPage = () => {
           </button>
         </form>
 
-        {/* Khu vực test nhanh 2 POV User & Admin khi chưa nối API Backend */}
-        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed var(--border-dim)' }}>
-          <div style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-            // UI PREVIEW (TEST NHANH 2 VAI TRÒ KHI CHƯA BẬT SERVER):
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={() => handleQuickDemoLogin('user')}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                background: 'var(--bg-surface)',
-                color: 'var(--accent-cyber)',
-                border: '1px solid var(--accent-cyber)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-              }}
-            >
-              DEMO: USER POV
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemoLogin('admin')}
-              style={{
-                flex: 1,
-                padding: '0.5rem',
-                background: 'var(--bg-surface)',
-                color: 'var(--accent-secondary)',
-                border: '1px solid var(--accent-secondary)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-              }}
-            >
-              DEMO: ADMIN POV
-            </button>
-          </div>
-        </div>
+        {isLoginMode && showForgotPasswordHelp && (
+          <p className="auth-info" role="status">
+            Vui lòng liên hệ quản trị viên để được hỗ trợ đặt lại mật khẩu.
+          </p>
+        )}
 
         <button
           type="button"
@@ -156,6 +143,7 @@ const AuthPage = () => {
           onClick={() => {
             setIsLoginMode(!isLoginMode);
             setErrorMsg('');
+            setShowForgotPasswordHelp(false);
           }}
         >
           {isLoginMode

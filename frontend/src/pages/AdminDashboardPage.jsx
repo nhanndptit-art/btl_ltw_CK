@@ -70,7 +70,7 @@ const AdminDashboardPage = () => {
           </h1>
         </div>
         <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          OPERATOR: <strong style={{ color: 'var(--accent-secondary)' }}>@{user?.username}</strong>
+          OPERATOR:  <strong style={{ color: 'var(--accent-secondary)' }}>   @{user?.username}</strong>
         </div>
       </div>
 
