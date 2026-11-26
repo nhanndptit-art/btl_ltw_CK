@@ -106,3 +106,29 @@
   cursor: pointer;
   text-decoration: underline;
 }
+
+.auth-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -10px;
+}
+
+.auth-forgot-btn {
+  padding: 4px 0;
+  background: none;
+  border: none;
+  color: var(--accent-cyber);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-info {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent-cyber);
+  background-color: rgba(0, 224, 255, 0.08);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}

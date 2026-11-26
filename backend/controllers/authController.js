@@ -17,15 +17,25 @@ const generateToken = (user) => {
 
 export const registerUser = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!username || !password || username.trim().length < 3) {
+    const cleanUsername = typeof username === 'string' ? username.trim() : '';
+    const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+    if (!cleanUsername || typeof password !== 'string' || !password || cleanUsername.length < 3) {
       return res.status(400).json({
         message: 'Tên đăng nhập phải từ 3 ký tự trở lên và không được để trống mật khẩu.',
       });
     }
 
-    const cleanUsername = username.trim();
+    if (email != null && typeof email !== 'string') {
+      return res.status(400).json({ message: 'Địa chỉ email không hợp lệ.' });
+    }
+
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      return res.status(400).json({ message: 'Địa chỉ email không hợp lệ.' });
+    }
+
     const [existingUsers] = await pool.execute(
       'SELECT id FROM users WHERE username = ?',
       [cleanUsername]
@@ -37,18 +47,30 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    if (cleanEmail) {
+      const [existingEmails] = await pool.execute(
+        'SELECT id FROM users WHERE email = ?',
+        [cleanEmail]
+      );
+
+      if (existingEmails.length > 0) {
+        return res.status(409).json({ message: 'Địa chỉ email đã được sử dụng.' });
+      }
+    }
+
     const passwordHash = hashPassword(password);
     const initialGems = 4800;
     const defaultRole = 'user';
 
     const [result] = await pool.execute(
-      'INSERT INTO users (username, password_hash, gems, pity_count, role) VALUES (?, ?, ?, 0, ?)',
-      [cleanUsername, passwordHash, initialGems, defaultRole]
+      'INSERT INTO users (username, email, password_hash, gems, pity_count, role) VALUES (?, ?, ?, ?, 0, ?)',
+      [cleanUsername, cleanEmail || null, passwordHash, initialGems, defaultRole]
     );
 
     const newUser = {
       id: result.insertId,
       username: cleanUsername,
+      email: cleanEmail || null,
       gems: initialGems,
       pity_count: 0,
       highest_boss_floor: 1,
@@ -60,6 +82,12 @@ export const registerUser = async (req, res) => {
 
     return res.status(201).json({ user: newUser, token });
   } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        message: 'Tên đăng nhập hoặc email đã được sử dụng.',
+      });
+    }
+
     console.error('Register Error:', error);
     return res.status(500).json({ message: 'Lỗi máy chủ khi đăng ký tài khoản.' });
   }
