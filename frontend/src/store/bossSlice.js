@@ -1,16 +1,14 @@
+// File: frontend/src/store/bossSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { updateUserTelemetry } from './authSlice.js';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { authFetch } from '../utils/apiClient.js';
 
 // Gọi API lấy danh sách tầng
 export const fetchBossFloorsThunk = createAsyncThunk(
   'boss/fetchFloors',
   async (userId, { dispatch, rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/bosses/${userId}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+      const data = await authFetch(`/bosses/${userId}`);
       dispatch(updateUserTelemetry(data));
       return data;
     } catch (error) {
@@ -24,13 +22,10 @@ export const battleBossThunk = createAsyncThunk(
   'boss/battle',
   async ({ userId, floorNumber, cardIds }, { dispatch, rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/bosses/${floorNumber}/battle`, {
+      const data = await authFetch(`/bosses/${floorNumber}/battle`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, cardIds }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
 
       // Cập nhật số Gem và Tiến độ tầng lên góc phải màn hình
       dispatch(updateUserTelemetry(data.userState));

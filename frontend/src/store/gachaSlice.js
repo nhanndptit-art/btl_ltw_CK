@@ -1,15 +1,13 @@
+// File: frontend/src/store/gachaSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { updateUserTelemetry } from './authSlice.js';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { authFetch } from '../utils/apiClient.js';
 
 export const fetchInventoryThunk = createAsyncThunk(
   'gacha/fetchInventory',
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/inventory/${userId}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+      const data = await authFetch(`/inventory/${userId}`);
       return data.inventory;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -21,16 +19,10 @@ export const performGachaRollThunk = createAsyncThunk(
   'gacha/performRoll',
   async ({ userId, pullCount }, { dispatch, rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/gacha/roll`, {
+      const data = await authFetch('/gacha/roll', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, pullCount }),
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Lỗi khi triệu hồi thẻ bài.');
-      }
 
       // Đồng bộ ngay số dư Gems và Pity Count sang authSlice
       dispatch(updateUserTelemetry(data.userState));
@@ -45,9 +37,7 @@ export const fetchGachaHistoryThunk = createAsyncThunk(
   'gacha/fetchHistory',
   async ({ userId, page = 1 }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/gacha/history/${userId}?page=${page}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Lỗi khi tải lịch sử triệu hồi.');
+      const data = await authFetch(`/gacha/history/${userId}?page=${page}`);
       return data;
     } catch (error) {
       return rejectWithValue(error.message);
