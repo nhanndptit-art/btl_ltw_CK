@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { setUserSession } from '../store/authSlice.js';
 import './AuthPage.css';
 
-// Đặt ngoài component để không bị khởi tạo lại mỗi lần re-render
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const AuthPage = () => {
@@ -22,7 +21,6 @@ const AuthPage = () => {
     setErrorMsg('');
     setLoading(true);
 
-    // Đã bỏ '/api' ở đầu vì API_BASE_URL đã có sẵn '/api'
     const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
 
     try {
@@ -37,13 +35,27 @@ const AuthPage = () => {
         throw new Error(data.message || 'Xác thực thất bại.');
       }
 
-      dispatch(setUserSession(data.user));
-      navigate('/gacha', { replace: true });
+      const userPayload = data.user || data;
+      const role = userPayload.role || 'user';
+
+      dispatch(setUserSession({ user: { ...userPayload, role }, token: data.token || null }));
+      navigate(role === 'admin' ? '/admin' : '/gacha', { replace: true });
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+
+  const handleQuickDemoLogin = (demoRole) => {
+    const demoUser =
+      demoRole === 'admin'
+        ? { id: 4, username: 'admin_tuananh', role: 'admin', gems: 999999, pity_count: 0, stamina: 100 }
+        : { id: 1, username: 'cyber_runner', role: 'user', gems: 11185, pity_count: 85, stamina: 100 };
+
+    dispatch(setUserSession({ user: demoUser, token: 'demo-jwt-token' }));
+    navigate(demoRole === 'admin' ? '/admin' : '/gacha', { replace: true });
   };
 
   return (
@@ -96,6 +108,47 @@ const AuthPage = () => {
               : 'ĐĂNG KÝ (+4,800 GEMS)'}
           </button>
         </form>
+
+        {/* Khu vực test nhanh 2 POV User & Admin khi chưa nối API Backend */}
+        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed var(--border-dim)' }}>
+          <div style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+            // UI PREVIEW (TEST NHANH 2 VAI TRÒ KHI CHƯA BẬT SERVER):
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={() => handleQuickDemoLogin('user')}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                background: 'var(--bg-surface)',
+                color: 'var(--accent-cyber)',
+                border: '1px solid var(--accent-cyber)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+              }}
+            >
+              DEMO: USER POV
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickDemoLogin('admin')}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                background: 'var(--bg-surface)',
+                color: 'var(--accent-secondary)',
+                border: '1px solid var(--accent-secondary)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+              }}
+            >
+              DEMO: ADMIN POV
+            </button>
+          </div>
+        </div>
 
         <button
           type="button"

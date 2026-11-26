@@ -1,21 +1,33 @@
-// File: backend/routes/apiRoutes.js
 import express from 'express';
 import { loginUser, registerUser } from '../controllers/authController.js';
 import { getGachaHistory, rollGacha } from '../controllers/gachaController.js';
 import { getUserInventory } from '../controllers/inventoryController.js';
-import { battleBoss, getBossFloors } from '../controllers/bossController.js'; // Import Controller mới
+import { battleBoss, getBossFloors } from '../controllers/bossController.js';
+import { verifyToken, authorizeRoles, verifySelfOrAdmin } from '../middleware/authMiddleware.js';
+import pool from '../config/db.js';
 
 const router = express.Router();
 
-// Auth & Gacha Routes hiện có
+// 1. Public Routes
 router.post('/auth/register', registerUser);
 router.post('/auth/login', loginUser);
-router.post('/gacha/roll', rollGacha);
-router.get('/gacha/history/:userId', getGachaHistory);
-router.get('/inventory/:userId', getUserInventory);
 
-// Routes mới cho Task 7: Tháp Boss
-router.get('/bosses/:userId', getBossFloors);
-router.post('/bosses/:floorNumber/battle', battleBoss);
+// 2. Player Routes (Bắt buộc đăng nhập & đúng chủ tài khoản)
+router.post('/gacha/roll', verifyToken, verifySelfOrAdmin, rollGacha);
+router.get('/gacha/history/:userId', verifyToken, verifySelfOrAdmin, getGachaHistory);
+router.get('/inventory/:userId', verifyToken, verifySelfOrAdmin, getUserInventory);
+router.get('/bosses/:userId', verifyToken, verifySelfOrAdmin, getBossFloors);
+router.post('/bosses/:floorNumber/battle', verifyToken, verifySelfOrAdmin, battleBoss);
+
+// 3. Admin Routes
+router.post('/admin/grant-gems', verifyToken, authorizeRoles('admin'), async (req, res) => {
+  try {
+    const { targetUserId, amount } = req.body;
+    await pool.execute('UPDATE users SET gems = gems + ? WHERE id = ?', [amount, targetUserId]);
+    return res.status(200).json({ message: `Đã cộng ${amount} Gems cho user #${targetUserId}` });
+  } catch (error) {
+    return res.status(500).json({ message: 'Lỗi cấp phát Gems.' });
+  }
+});
 
 export default router;
