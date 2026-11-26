@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/authSlice.js';
 import { clearPullResults } from '../store/gachaSlice.js';
 import { useThemeContext } from '../context/ThemeContext.jsx';
+import { formatGems } from '../utils/formatGems.js';
 import '../components/Navbar.css';
 
 const UserLayout = () => {
@@ -65,7 +66,7 @@ const UserLayout = () => {
                 <div className="telemetry-chip">
                   <span className="telemetry-label">GEMS:</span>
                   <span className="telemetry-value gem-highlight">
-                    {(user.gems ?? 0).toLocaleString()}
+                    {formatGems(user.gems ?? 0)}
                   </span>
                 </div>
                 <span className="operator-name">@{user.username}</span>
