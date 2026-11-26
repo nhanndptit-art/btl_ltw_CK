@@ -137,3 +137,84 @@
   background-color: var(--accent-secondary);
   color: #ffffff;
 }
+
+.admin-navbar .cyber-navbar-inner {
+  gap: 12px;
+}
+
+.admin-navbar .cyber-brand {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.admin-navbar .cyber-nav-links {
+  flex: 1;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-navbar .cyber-nav-item {
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.admin-navbar .cyber-navbar-actions,
+.admin-navbar .user-telemetry-bar {
+  gap: 8px;
+}
+
+.admin-navbar .telemetry-chip {
+  padding: 5px 8px;
+  font-size: 0.78rem;
+}
+
+.admin-navbar .operator-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-navbar .cyber-icon-btn,
+.admin-navbar .cyber-logout-btn {
+  padding: 7px 9px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 1050px) {
+  .admin-navbar .cyber-navbar-inner {
+    height: auto;
+    min-height: 72px;
+    flex-wrap: wrap;
+    padding-block: 12px;
+  }
+
+  .admin-navbar .cyber-navbar-actions {
+    margin-left: auto;
+  }
+
+  .admin-navbar .cyber-nav-links {
+    order: 1;
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-navbar .cyber-navbar-inner {
+    justify-content: center;
+  }
+
+  .admin-navbar .cyber-navbar-actions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+
+  .admin-navbar .cyber-nav-links {
+    flex-wrap: wrap;
+  }
+}
