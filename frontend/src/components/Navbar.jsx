@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/authSlice.js';
 import { clearPullResults } from '../store/gachaSlice.js';
 import { useThemeContext } from '../context/ThemeContext.jsx';
+import { formatGems } from '../utils/formatGems.js';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -66,7 +67,7 @@ const Navbar = () => {
               <div className="telemetry-chip">
                 <span className="telemetry-label">GEMS:</span>
                 <span className="telemetry-value gem-highlight">
-                  {user.gems.toLocaleString()}
+                  {formatGems(user.gems)}
                 </span>
               </div>
               <span className="operator-name">@{user.username}</span>
