@@ -16,28 +16,13 @@ const AdminLayout = () => {
 
   return (
     <div className="cyber-app-shell">
-      <header
-        className="cyber-navbar"
-        style={{ borderBottom: '2px solid var(--accent-secondary)' }}
-      >
+      <header className="cyber-navbar admin-navbar">
         <div className="cyber-navbar-inner">
           <Link to="/admin" className="cyber-brand">
             <span className="brand-bracket" style={{ color: 'var(--accent-secondary)' }}>
               //
             </span>{' '}
-            X_GACHA{' '}
-            <span
-              style={{
-                fontSize: '0.75rem',
-                padding: '2px 8px',
-                background: 'var(--accent-secondary)',
-                color: '#fff',
-                fontFamily: 'var(--font-mono)',
-                marginLeft: '6px',
-              }}
-            >
-              SYS_ADMIN
-            </span>
+            X_GACHA
           </Link>
 
           <nav className="cyber-nav-links">
@@ -48,7 +33,7 @@ const AdminLayout = () => {
                 isActive ? 'cyber-nav-item active' : 'cyber-nav-item'
               }
             >
-              TRUNG TÂM ĐIỀU HÀNH
+              TỔNG QUAN
             </NavLink>
             <NavLink
               to="/admin/users"
@@ -56,7 +41,7 @@ const AdminLayout = () => {
                 isActive ? 'cyber-nav-item active' : 'cyber-nav-item'
               }
             >
-              QUẢN LÝ ĐẶC VỤ
+              TÀI KHOẢN
             </NavLink>
             <NavLink
               to="/admin/cards"
@@ -64,7 +49,7 @@ const AdminLayout = () => {
                 isActive ? 'cyber-nav-item active' : 'cyber-nav-item'
               }
             >
-              KHO DỮ LIỆU THẺ
+              THẺ BÀI
             </NavLink>
           </nav>
 
@@ -77,7 +62,7 @@ const AdminLayout = () => {
                     className="telemetry-value"
                     style={{ color: 'var(--accent-secondary)' }}
                   >
-                    ROOT_ADMIN
+                    {user.role.toUpperCase()}
                   </span>
                 </div>
                 <span className="operator-name">@{user.username}</span>
@@ -97,7 +82,7 @@ const AdminLayout = () => {
               onClick={handleLogout}
               className="cyber-logout-btn"
             >
-              THOÁT QUẢN TRỊ
+              NGẮT KẾT NỐI
             </button>
           </div>
         </div>

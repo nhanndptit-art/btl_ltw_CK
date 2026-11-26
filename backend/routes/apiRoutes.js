@@ -3,6 +3,7 @@ import { loginUser, registerUser } from '../controllers/authController.js';
 import { getGachaHistory, rollGacha } from '../controllers/gachaController.js';
 import { getUserInventory } from '../controllers/inventoryController.js';
 import { battleBoss, getBossFloors } from '../controllers/bossController.js';
+import { getAdminDashboard } from '../controllers/adminController.js';
 import { verifyToken, authorizeRoles, verifySelfOrAdmin } from '../middleware/authMiddleware.js';
 import pool from '../config/db.js';
 
@@ -20,6 +21,8 @@ router.get('/bosses/:userId', verifyToken, verifySelfOrAdmin, getBossFloors);
 router.post('/bosses/:floorNumber/battle', verifyToken, verifySelfOrAdmin, battleBoss);
 
 // 3. Admin Routes
+router.get('/admin/dashboard', verifyToken, authorizeRoles('admin'), getAdminDashboard);
+
 router.post('/admin/grant-gems', verifyToken, authorizeRoles('admin'), async (req, res) => {
   try {
     const { targetUserId, amount } = req.body;
