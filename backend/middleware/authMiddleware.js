@@ -1,21 +1,38 @@
 import jwt from 'jsonwebtoken';
+import pool from '../config/db.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'btl_ltw_game_secret_key_2026';
 
-// Kiểm tra Token đăng nhập
-export const verifyToken = (req, res, next) => {
+// Kiểm tra token và đồng bộ quyền/trạng thái tài khoản từ database.
+export const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Bạn cần đăng nhập để thực hiện thao tác này.' });
   }
 
   const token = authHeader.split(' ')[1];
+  let decoded;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
+    decoded = jwt.verify(token, JWT_SECRET);
   } catch (error) {
     return res.status(403).json({ message: 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn.' });
+  }
+
+  try {
+    const [rows] = await pool.execute(
+      'SELECT id, username, role, status FROM users WHERE id = ?',
+      [decoded.id]
+    );
+
+    if (rows.length === 0 || rows[0].status !== 'active') {
+      return res.status(403).json({ message: 'Tài khoản không còn hoạt động.' });
+    }
+
+    req.user = { ...decoded, ...rows[0] };
+    return next();
+  } catch (error) {
+    console.error('Verify Token Account Error:', error);
+    return res.status(500).json({ message: 'Không thể xác minh tài khoản đăng nhập.' });
   }
 };
 

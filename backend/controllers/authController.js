@@ -66,33 +66,103 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+  const cleanUsername = typeof username === 'string' ? username.trim() : '';
+
+  if (!cleanUsername || typeof password !== 'string' || !password) {
+    return res.status(400).json({
+      message: 'Vui lòng nhập đầy đủ định danh và mật khẩu.',
+    });
+  }
+
+  let connection;
+  let transactionStarted = false;
+
   try {
-    const { username, password } = req.body;
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    transactionStarted = true;
 
-    if (!username || !password) {
-      return res.status(400).json({
-        message: 'Vui lòng nhập đầy đủ định danh và mật khẩu.',
-      });
-    }
-
-    const passwordHash = hashPassword(password);
-    const [rows] = await pool.execute(
-      'SELECT id, username, gems, pity_count, highest_boss_floor, stamina, role FROM users WHERE username = ? AND password_hash = ?',
-      [username.trim(), passwordHash]
+    const [rows] = await connection.execute(
+      `SELECT id, username, email, password_hash, gems, pity_count,
+              highest_boss_floor, stamina, role, status, failed_login_attempts,
+              locked_until,
+              (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked
+       FROM users
+       WHERE username = ?
+       FOR UPDATE`,
+      [cleanUsername]
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({
-        message: 'Sai tên đăng nhập hoặc mật khẩu truy cập.',
-      });
+      await connection.rollback();
+      transactionStarted = false;
+      return res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu truy cập.' });
     }
 
-    const user = rows[0];
+    const account = rows[0];
+    if (account.status !== 'active') {
+      await connection.rollback();
+      transactionStarted = false;
+      return res.status(403).json({ message: 'Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.' });
+    }
+
+    if (Boolean(account.is_locked)) {
+      await connection.rollback();
+      transactionStarted = false;
+      return res.status(423).json({ message: 'Tài khoản đang bị khóa đăng nhập tạm thời.' });
+    }
+
+    if (hashPassword(password) !== account.password_hash) {
+      const failedAttempts = Number(account.failed_login_attempts) + 1;
+      await connection.execute(
+        `UPDATE users
+         SET failed_login_attempts = ?,
+             locked_until = CASE
+               WHEN ? >= 15 THEN DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 1 DAY)
+               WHEN ? >= 10 THEN DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 30 MINUTE)
+               WHEN ? >= 5 THEN DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 5 MINUTE)
+               ELSE NULL
+             END
+         WHERE id = ?`,
+        [failedAttempts, failedAttempts, failedAttempts, failedAttempts, account.id]
+      );
+      await connection.commit();
+      transactionStarted = false;
+
+      if (failedAttempts >= 5) {
+        return res.status(423).json({ message: 'Tài khoản đã bị khóa đăng nhập tạm thời do nhập sai mật khẩu nhiều lần.' });
+      }
+      return res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu truy cập.' });
+    }
+
+    await connection.execute(
+      `UPDATE users
+       SET failed_login_attempts = 0, locked_until = NULL, last_login_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [account.id]
+    );
+    await connection.commit();
+    transactionStarted = false;
+
+    const user = {
+      id: account.id,
+      username: account.username,
+      email: account.email,
+      gems: account.gems,
+      pity_count: account.pity_count,
+      highest_boss_floor: account.highest_boss_floor,
+      stamina: account.stamina,
+      role: account.role,
+    };
     const token = generateToken(user);
 
     return res.status(200).json({ user, token });
   } catch (error) {
+    if (connection && transactionStarted) await connection.rollback();
     console.error('Login Error:', error);
     return res.status(500).json({ message: 'Lỗi kết nối cơ sở dữ liệu khi đăng nhập.' });
+  } finally {
+    if (connection) connection.release();
   }
 };

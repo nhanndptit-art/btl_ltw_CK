@@ -41,6 +41,14 @@ Get-Content .\database.sql | mysql -u root -p
 ```
 -->
 
+## Migration cho trang quản lý tài khoản
+
+Sau khi đã cập nhật schema tài khoản, tạo bảng nhật ký quản trị bằng migration:
+
+```powershell
+Get-Content .\database-migration-admin-users.sql | mysql -u root -p
+```
+
 ## 3. Cấu hình backend
 
 Mở terminal tại thư mục gốc:

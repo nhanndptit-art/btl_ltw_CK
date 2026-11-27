@@ -4,6 +4,15 @@ import { getGachaHistory, rollGacha } from '../controllers/gachaController.js';
 import { getUserInventory } from '../controllers/inventoryController.js';
 import { battleBoss, getBossFloors } from '../controllers/bossController.js';
 import { getAdminDashboard } from '../controllers/adminController.js';
+import {
+  clearAdminUserLoginLock,
+  getAdminAuditLogs,
+  getAdminUserDetails,
+  getAdminUsers,
+  updateAdminUserRole,
+  updateAdminUserResources,
+  updateAdminUserStatus,
+} from '../controllers/adminUserController.js';
 import { verifyToken, authorizeRoles, verifySelfOrAdmin } from '../middleware/authMiddleware.js';
 import pool from '../config/db.js';
 
@@ -22,6 +31,13 @@ router.post('/bosses/:floorNumber/battle', verifyToken, verifySelfOrAdmin, battl
 
 // 3. Admin Routes
 router.get('/admin/dashboard', verifyToken, authorizeRoles('admin'), getAdminDashboard);
+router.get('/admin/users', verifyToken, authorizeRoles('admin'), getAdminUsers);
+router.get('/admin/users/:userId', verifyToken, authorizeRoles('admin'), getAdminUserDetails);
+router.patch('/admin/users/:userId/role', verifyToken, authorizeRoles('admin'), updateAdminUserRole);
+router.patch('/admin/users/:userId/status', verifyToken, authorizeRoles('admin'), updateAdminUserStatus);
+router.patch('/admin/users/:userId/resources', verifyToken, authorizeRoles('admin'), updateAdminUserResources);
+router.post('/admin/users/:userId/clear-login-lock', verifyToken, authorizeRoles('admin'), clearAdminUserLoginLock);
+router.get('/admin/audit-logs', verifyToken, authorizeRoles('admin'), getAdminAuditLogs);
 
 router.post('/admin/grant-gems', verifyToken, authorizeRoles('admin'), async (req, res) => {
   try {
