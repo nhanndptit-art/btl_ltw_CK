@@ -111,9 +111,42 @@
 }
 
 .operator-name {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+  max-width: clamp(7rem, 12vw, 10rem);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+.operator-name-text {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operator-name-tooltip {
+  position: absolute;
+  z-index: 200;
+  top: calc(100% + 8px);
+  right: 0;
+  display: none;
+  max-width: min(320px, 80vw);
+  padding: 8px 10px;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.operator-name:hover .operator-name-tooltip,
+.operator-name:focus-visible .operator-name-tooltip {
+  display: block;
 }
 
 .cyber-icon-btn,
@@ -172,9 +205,6 @@
 
 .admin-navbar .operator-name {
   max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .admin-navbar .cyber-icon-btn,
@@ -203,6 +233,10 @@
 }
 
 @media (max-width: 640px) {
+  .cyber-navbar:not(.admin-navbar) .operator-name {
+    display: none;
+  }
+
   .admin-navbar .cyber-navbar-inner {
     justify-content: center;
   }

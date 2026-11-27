@@ -3,6 +3,7 @@ import { NavLink, Link, Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/authSlice.js';
 import { useThemeContext } from '../context/ThemeContext.jsx';
+import OperatorName from '../components/OperatorName.jsx';
 import '../components/Navbar.css';
 
 const AdminLayout = () => {
@@ -65,7 +66,7 @@ const AdminLayout = () => {
                     {user.role.toUpperCase()}
                   </span>
                 </div>
-                <span className="operator-name">@{user.username}</span>
+                <OperatorName username={user.username} />
               </div>
             )}
 
