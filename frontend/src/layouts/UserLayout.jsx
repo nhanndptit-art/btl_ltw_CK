@@ -5,6 +5,7 @@ import { logoutUser } from '../store/authSlice.js';
 import { clearPullResults } from '../store/gachaSlice.js';
 import { useThemeContext } from '../context/ThemeContext.jsx';
 import { formatGems } from '../utils/formatGems.js';
+import OperatorName from '../components/OperatorName.jsx';
 import '../components/Navbar.css';
 
 const UserLayout = () => {
@@ -69,7 +70,7 @@ const UserLayout = () => {
                     {formatGems(user.gems ?? 0)}
                   </span>
                 </div>
-                <span className="operator-name">@{user.username}</span>
+                <OperatorName username={user.username} />
               </div>
             )}
 
