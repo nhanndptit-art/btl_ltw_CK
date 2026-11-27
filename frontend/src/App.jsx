@@ -14,6 +14,7 @@ import InventoryPage from './pages/InventoryPage.jsx';
 import BossPage from './pages/BossPage.jsx';
 
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
+import AdminAccountsPage from './pages/AdminAccountsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import './App.css';
 
@@ -42,7 +43,7 @@ const App = () => {
       <Route element={<ProtectedRoute requireAuth={true} allowedRoles={['admin']} />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/admin/users" element={<AdminDashboardPage />} />
+          <Route path="/admin/users" element={<AdminAccountsPage />} />
           <Route path="/admin/cards" element={<AdminDashboardPage />} />
         </Route>
       </Route>
