@@ -115,7 +115,8 @@ export const loginUser = async (req, res) => {
       `SELECT id, username, email, password_hash, gems, pity_count,
               highest_boss_floor, stamina, role, status, failed_login_attempts,
               locked_until,
-              (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked
+              (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked,
+              GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, locked_until)) AS lock_remaining_seconds
        FROM users
        WHERE username = ?
        FOR UPDATE`,
@@ -138,7 +139,10 @@ export const loginUser = async (req, res) => {
     if (Boolean(account.is_locked)) {
       await connection.rollback();
       transactionStarted = false;
-      return res.status(423).json({ message: 'Tài khoản đang bị khóa đăng nhập tạm thời.' });
+      return res.status(423).json({
+        message: 'Tài khoản đang bị khóa đăng nhập tạm thời.',
+        lock_remaining_seconds: Number(account.lock_remaining_seconds),
+      });
     }
 
     if (hashPassword(password) !== account.password_hash) {
@@ -155,12 +159,24 @@ export const loginUser = async (req, res) => {
          WHERE id = ?`,
         [failedAttempts, failedAttempts, failedAttempts, failedAttempts, account.id]
       );
-      await connection.commit();
-      transactionStarted = false;
 
       if (failedAttempts >= 5) {
-        return res.status(423).json({ message: 'Tài khoản đã bị khóa đăng nhập tạm thời do nhập sai mật khẩu nhiều lần.' });
+        const [lockRows] = await connection.execute(
+          `SELECT GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, locked_until)) AS lock_remaining_seconds
+           FROM users
+           WHERE id = ?`,
+          [account.id]
+        );
+        await connection.commit();
+        transactionStarted = false;
+        return res.status(423).json({
+          message: 'Tài khoản đã bị khóa đăng nhập tạm thời do nhập sai mật khẩu nhiều lần.',
+          lock_remaining_seconds: Number(lockRows[0].lock_remaining_seconds),
+        });
       }
+
+      await connection.commit();
+      transactionStarted = false;
       return res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu truy cập.' });
     }
 
@@ -192,5 +208,27 @@ export const loginUser = async (req, res) => {
     return res.status(500).json({ message: 'Lỗi kết nối cơ sở dữ liệu khi đăng nhập.' });
   } finally {
     if (connection) connection.release();
+  }
+};
+
+export const getLoginLockStatus = async (req, res) => {
+  const username = typeof req.query.username === 'string' ? req.query.username.trim() : '';
+  if (!username) {
+    return res.status(400).json({ message: 'Vui lòng nhập định danh.' });
+  }
+
+  try {
+    const [rows] = await pool.execute(
+      `SELECT GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, locked_until)) AS lock_remaining_seconds
+       FROM users
+       WHERE username = ? AND status = 'active'`,
+      [username]
+    );
+    return res.status(200).json({
+      lock_remaining_seconds: Number(rows[0]?.lock_remaining_seconds || 0),
+    });
+  } catch (error) {
+    console.error('Get Login Lock Status Error:', error);
+    return res.status(500).json({ message: 'Không thể kiểm tra trạng thái khóa đăng nhập.' });
   }
 };

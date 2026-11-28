@@ -1,5 +1,5 @@
 import express from 'express';
-import { loginUser, registerUser } from '../controllers/authController.js';
+import { getLoginLockStatus, loginUser, registerUser } from '../controllers/authController.js';
 import { getGachaHistory, rollGacha } from '../controllers/gachaController.js';
 import { getUserInventory } from '../controllers/inventoryController.js';
 import { battleBoss, getBossFloors } from '../controllers/bossController.js';
@@ -21,6 +21,7 @@ const router = express.Router();
 // 1. Public Routes
 router.post('/auth/register', registerUser);
 router.post('/auth/login', loginUser);
+router.get('/auth/login-lock-status', getLoginLockStatus);
 
 // 2. Player Routes (Bắt buộc đăng nhập & đúng chủ tài khoản)
 router.post('/gacha/roll', verifyToken, verifySelfOrAdmin, rollGacha);

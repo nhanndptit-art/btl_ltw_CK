@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { authFetch } from '../utils/apiClient.js';
 import './AdminAccountsPage.css';
@@ -9,6 +9,15 @@ const formatDate = (value) => {
   if (!value) return 'Chưa có';
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? 'Không xác định' : date.toLocaleString('vi-VN');
+};
+
+const formatCountdown = (seconds) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  return [hours, minutes, remainingSeconds]
+    .map((part) => String(part).padStart(2, '0'))
+    .join(':');
 };
 
 const auditActionLabel = (action) => {
@@ -42,6 +51,84 @@ const AdminAccountsPage = () => {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
   const [resourceDraft, setResourceDraft] = useState({ gems: '', stamina: '' });
+  const [lockRefresh, setLockRefresh] = useState(0);
+  const [detailsLockRemainingSeconds, setDetailsLockRemainingSeconds] = useState(0);
+  const detailsDialogRef = useRef(null);
+  const detailsTriggerRef = useRef(null);
+
+  useEffect(() => {
+    const nextExpiry = users.reduce((nearest, account) => {
+      const expiry = account.lock_expires_at;
+      return expiry && expiry > Date.now() ? Math.min(nearest, expiry) : nearest;
+    }, Number.POSITIVE_INFINITY);
+    if (!Number.isFinite(nextExpiry)) return undefined;
+
+    const timer = window.setTimeout(
+      () => setLockRefresh((previous) => previous + 1),
+      Math.max(0, nextExpiry - Date.now()) + 25
+    );
+    return () => window.clearTimeout(timer);
+  }, [users, lockRefresh]);
+
+  const isAccountLocked = (account) => (
+    Boolean(account.lock_expires_at && account.lock_expires_at > Date.now())
+  );
+
+  const closeDetails = useCallback(() => {
+    setExpandedUserId(null);
+    setUserDetails(null);
+    setDetailsError('');
+    setDetailsLockRemainingSeconds(0);
+    setResourceDraft({ gems: '', stamina: '' });
+  }, []);
+
+  useEffect(() => {
+    if (expandedUserId === null) {
+      detailsTriggerRef.current?.focus();
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    detailsDialogRef.current?.querySelector('button')?.focus();
+
+    const handleDialogKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        closeDetails();
+        return;
+      }
+      if (event.key !== 'Tab' || !detailsDialogRef.current) return;
+
+      const focusableElements = detailsDialogRef.current.querySelectorAll(
+        'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      if (!firstElement || !lastElement) return;
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleDialogKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleDialogKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [expandedUserId, closeDetails]);
+
+  useEffect(() => {
+    if (expandedUserId === null || detailsLockRemainingSeconds <= 0) return undefined;
+    const timer = window.setInterval(() => {
+      setDetailsLockRemainingSeconds((remaining) => Math.max(0, remaining - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [expandedUserId, detailsLockRemainingSeconds > 0]);
 
   useEffect(() => {
     let active = true;
@@ -58,7 +145,13 @@ const AdminAccountsPage = () => {
       try {
         const data = await authFetch(`/admin/users?${params.toString()}`);
         if (!active) return;
-        setUsers(data.users);
+        setUsers(data.users.map((account) => {
+          const remaining = Number(account.lock_remaining_seconds);
+          return {
+            ...account,
+            lock_expires_at: remaining > 0 ? Date.now() + remaining * 1000 : null,
+          };
+        }));
         setPagination(data.pagination);
         if (data.pagination.page !== page) setPage(data.pagination.page);
       } catch (error) {
@@ -123,22 +216,23 @@ const AdminAccountsPage = () => {
     }
   };
 
-  const toggleDetails = async (account) => {
+  const toggleDetails = async (account, event) => {
     if (expandedUserId === account.id) {
-      setExpandedUserId(null);
-      setUserDetails(null);
-      setDetailsError('');
-      setResourceDraft({ gems: '', stamina: '' });
+      closeDetails();
       return;
     }
 
+    detailsTriggerRef.current = event.currentTarget;
     setExpandedUserId(account.id);
     setUserDetails(null);
     setDetailsError('');
+    setDetailsLockRemainingSeconds(0);
     setDetailsLoading(true);
     try {
       const data = await authFetch(`/admin/users/${account.id}`);
       setUserDetails(data.user);
+      const remaining = Number(data.user.lock_remaining_seconds);
+      setDetailsLockRemainingSeconds(Number.isFinite(remaining) ? Math.max(0, remaining) : 0);
       setResourceDraft({
         gems: String(data.user.gems),
         stamina: String(data.user.stamina),
@@ -283,7 +377,7 @@ const AdminAccountsPage = () => {
                       </span>
                     </td>
                     <td>
-                      {account.is_locked
+                      {isAccountLocked(account)
                         ? <span className="admin-account-lock">ĐANG KHÓA</span>
                         : 'Bình thường'}
                       {Number(account.failed_login_attempts) > 0 && (
@@ -299,10 +393,11 @@ const AdminAccountsPage = () => {
                         <button
                           type="button"
                           className="admin-account-secondary-btn"
-                          onClick={() => toggleDetails(account)}
+                          onClick={(event) => toggleDetails(account, event)}
                           aria-expanded={expandedUserId === account.id}
+                          aria-controls={`account-details-dialog-${account.id}`}
                         >
-                          {expandedUserId === account.id ? 'ĐÓNG' : 'CHI TIẾT'}
+                          CHI TIẾT
                         </button>
                         <button
                           type="button"
@@ -342,7 +437,7 @@ const AdminAccountsPage = () => {
                         >
                           {account.status === 'active' ? 'VÔ HIỆU HÓA' : 'KÍCH HOẠT'}
                         </button>
-                        {(account.is_locked || Number(account.failed_login_attempts) > 0) && (
+                        {isAccountLocked(account) && (
                           <button
                             type="button"
                             className="admin-account-warning-btn"
@@ -362,79 +457,115 @@ const AdminAccountsPage = () => {
                       </div>
                     </td>
                   </tr>
-                  {expandedUserId === account.id && (
-                    <tr className="admin-account-details-row">
-                      <td colSpan="7">
-                        {detailsLoading && <p>ĐANG TẢI CHI TIẾT...</p>}
-                        {detailsError && <p className="admin-accounts-error" role="alert">{detailsError}</p>}
-                        {userDetails && userDetails.id === account.id && (
-                          <>
-                            <dl className="admin-account-details">
-                              <div><dt>Email</dt><dd>{userDetails.email || 'Chưa có'}</dd></div>
-                              <div><dt>Ngày tạo</dt><dd>{formatDate(userDetails.created_at)}</dd></div>
-                              <div><dt>Đăng nhập gần nhất</dt><dd>{formatDate(userDetails.last_login_at)}</dd></div>
-                              <div><dt>Gems</dt><dd>{Number(userDetails.gems || 0).toLocaleString('vi-VN')}</dd></div>
-                              <div><dt>Stamina</dt><dd>{userDetails.stamina}/100</dd></div>
-                              <div><dt>Pity</dt><dd>{userDetails.pity_count}/90</dd></div>
-                              <div><dt>Tầng Boss cao nhất</dt><dd>{userDetails.highest_boss_floor}</dd></div>
-                              <div><dt>Lần đăng nhập sai</dt><dd>{userDetails.failed_login_attempts}</dd></div>
-                              <div><dt>Khóa đến</dt><dd>{formatDate(userDetails.locked_until)}</dd></div>
-                            </dl>
-                            <form
-                              className="admin-account-resource-form"
-                              onSubmit={(event) => saveResources(event, account)}
-                            >
-                              <label htmlFor={`account-gems-${account.id}`}>
-                                Gems
-                                <input
-                                  id={`account-gems-${account.id}`}
-                                  type="number"
-                                  min="0"
-                                  max="2147483647"
-                                  step="1"
-                                  required
-                                  value={resourceDraft.gems}
-                                  onChange={(event) => setResourceDraft((draft) => ({
-                                    ...draft,
-                                    gems: event.target.value,
-                                  }))}
-                                />
-                              </label>
-                              <label htmlFor={`account-stamina-${account.id}`}>
-                                Stamina (0–100)
-                                <input
-                                  id={`account-stamina-${account.id}`}
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  step="1"
-                                  required
-                                  value={resourceDraft.stamina}
-                                  onChange={(event) => setResourceDraft((draft) => ({
-                                    ...draft,
-                                    stamina: event.target.value,
-                                  }))}
-                                />
-                              </label>
-                              <button
-                                type="submit"
-                                className="admin-account-primary-btn"
-                                disabled={actionUserId === account.id}
-                              >
-                                {actionUserId === account.id ? 'ĐANG LƯU...' : 'LƯU TÀI NGUYÊN'}
-                              </button>
-                            </form>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  )}
                 </React.Fragment>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      {expandedUserId !== null && (
+        <div
+          className="admin-account-dialog-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeDetails();
+          }}
+        >
+          <section
+            ref={detailsDialogRef}
+            id={`account-details-dialog-${expandedUserId}`}
+            className="admin-account-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-account-dialog-title"
+          >
+            <header className="admin-account-dialog-header">
+              <h2 id="admin-account-dialog-title">
+                CHI TIẾT TÀI KHOẢN
+                {userDetails?.id === expandedUserId ? ` // @${userDetails.username}` : ''}
+              </h2>
+              <button
+                type="button"
+                className="admin-account-warning-btn"
+                onClick={closeDetails}
+                aria-label="Đóng chi tiết tài khoản"
+              >
+                ĐÓNG
+              </button>
+            </header>
+
+            {detailsLoading && <p>ĐANG TẢI CHI TIẾT...</p>}
+            {detailsError && <p className="admin-accounts-error" role="alert">{detailsError}</p>}
+            {userDetails && userDetails.id === expandedUserId && (
+              <>
+                <dl className="admin-account-details">
+                  <div><dt>Email</dt><dd>{userDetails.email || 'Chưa có'}</dd></div>
+                  <div><dt>Ngày tạo</dt><dd>{formatDate(userDetails.created_at)}</dd></div>
+                  <div><dt>Đăng nhập gần nhất</dt><dd>{formatDate(userDetails.last_login_at)}</dd></div>
+                  <div><dt>Gems</dt><dd>{Number(userDetails.gems || 0).toLocaleString('vi-VN')}</dd></div>
+                  <div><dt>Stamina</dt><dd>{userDetails.stamina}/100</dd></div>
+                  <div><dt>Pity</dt><dd>{userDetails.pity_count}/90</dd></div>
+                  <div><dt>Tầng Boss cao nhất</dt><dd>{userDetails.highest_boss_floor}</dd></div>
+                  <div><dt>Lần đăng nhập sai</dt><dd>{userDetails.failed_login_attempts}</dd></div>
+                  <div><dt>Khóa đến</dt><dd>{formatDate(userDetails.locked_until)}</dd></div>
+                  <div>
+                    <dt>Thời gian khóa còn lại</dt>
+                    <dd className={detailsLockRemainingSeconds > 0 ? 'admin-account-lock-countdown' : ''}>
+                      {detailsLockRemainingSeconds > 0
+                        ? formatCountdown(detailsLockRemainingSeconds)
+                        : 'Không bị khóa'}
+                    </dd>
+                  </div>
+                </dl>
+                <form
+                  className="admin-account-resource-form"
+                  onSubmit={(event) => saveResources(event, users.find((account) => account.id === expandedUserId))}
+                >
+                  <label htmlFor={`account-gems-${expandedUserId}`}>
+                    Gems
+                    <input
+                      id={`account-gems-${expandedUserId}`}
+                      type="number"
+                      min="0"
+                      max="2147483647"
+                      step="1"
+                      required
+                      value={resourceDraft.gems}
+                      onChange={(event) => setResourceDraft((draft) => ({
+                        ...draft,
+                        gems: event.target.value,
+                      }))}
+                    />
+                  </label>
+                  <label htmlFor={`account-stamina-${expandedUserId}`}>
+                    Stamina (0–100)
+                    <input
+                      id={`account-stamina-${expandedUserId}`}
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      required
+                      value={resourceDraft.stamina}
+                      onChange={(event) => setResourceDraft((draft) => ({
+                        ...draft,
+                        stamina: event.target.value,
+                      }))}
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    className="admin-account-primary-btn"
+                    disabled={actionUserId === expandedUserId}
+                  >
+                    {actionUserId === expandedUserId ? 'ĐANG LƯU...' : 'LƯU TÀI NGUYÊN'}
+                  </button>
+                </form>
+              </>
+            )}
+          </section>
+        </div>
+      )}
 
       <footer className="admin-account-pagination">
         <label>
