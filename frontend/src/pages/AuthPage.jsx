@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setUserSession } from '../store/authSlice.js';
@@ -14,13 +14,77 @@ const AuthPage = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [showForgotPasswordHelp, setShowForgotPasswordHelp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [lockUntil, setLockUntil] = useState(null);
+  const [lockRemainingSeconds, setLockRemainingSeconds] = useState(null);
+  const [lockStatusError, setLockStatusError] = useState('');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (lockUntil === null) return undefined;
+
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1000));
+      setLockRemainingSeconds(remaining);
+      if (remaining === 0) {
+        setLockUntil(null);
+        setErrorMsg('');
+      }
+    };
+
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(timer);
+  }, [lockUntil]);
+
+  useEffect(() => {
+    if (lockUntil === null || !username.trim()) return undefined;
+    let active = true;
+
+    const checkLockStatus = async () => {
+      try {
+        const params = new URLSearchParams({ username: username.trim() });
+        const response = await fetch(`${API_BASE_URL}/auth/login-lock-status?${params}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Không thể đồng bộ trạng thái khóa.');
+        if (!active) return;
+
+        const remaining = Number(data.lock_remaining_seconds);
+        if (!Number.isFinite(remaining) || remaining <= 0) {
+          setLockUntil(null);
+          setLockRemainingSeconds(null);
+          setErrorMsg('');
+          setLockStatusError('');
+          return;
+        }
+
+        setLockStatusError('');
+        const serverLockUntil = Date.now() + remaining * 1000;
+        setLockUntil((current) => (
+          current === null || Math.abs(current - serverLockUntil) > 2000
+            ? serverLockUntil
+            : current
+        ));
+      } catch (error) {
+        if (active) setLockStatusError(error.message || 'Không thể đồng bộ trạng thái khóa.');
+      }
+    };
+
+    checkLockStatus();
+    const timer = window.setInterval(checkLockStatus, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [lockUntil, username]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setLockUntil(null);
+    setLockRemainingSeconds(null);
+    setLockStatusError('');
     setLoading(true);
 
     const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
@@ -38,6 +102,10 @@ const AuthPage = () => {
 
       const data = await response.json();
       if (!response.ok) {
+        const remaining = Number(data.lock_remaining_seconds);
+        if (response.status === 423 && Number.isFinite(remaining) && remaining > 0) {
+          setLockUntil(Date.now() + remaining * 1000);
+        }
         throw new Error(data.message || 'Xác thực thất bại.');
       }
 
@@ -70,6 +138,18 @@ const AuthPage = () => {
         </p>
 
         {errorMsg && <div className="auth-alert">{errorMsg}</div>}
+        {lockRemainingSeconds !== null && lockRemainingSeconds > 0 && (
+          <p className="auth-lock-countdown" role="timer" aria-live="off">
+            Thời gian khóa còn lại: {[
+              Math.floor(lockRemainingSeconds / 3600),
+              Math.floor((lockRemainingSeconds % 3600) / 60),
+              lockRemainingSeconds % 60,
+            ].map((part) => String(part).padStart(2, '0')).join(':')}
+          </p>
+        )}
+        {lockStatusError && lockUntil !== null && (
+          <p className="auth-info" role="status">{lockStatusError}</p>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="field-group">
@@ -78,7 +158,13 @@ const AuthPage = () => {
               id="username"
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setLockUntil(null);
+                setLockRemainingSeconds(null);
+                setLockStatusError('');
+                setErrorMsg('');
+              }}
               placeholder="Nhập tên đặc vụ..."
               required
             />
@@ -144,6 +230,9 @@ const AuthPage = () => {
             setIsLoginMode(!isLoginMode);
             setErrorMsg('');
             setShowForgotPasswordHelp(false);
+            setLockUntil(null);
+            setLockRemainingSeconds(null);
+            setLockStatusError('');
           }}
         >
           {isLoginMode

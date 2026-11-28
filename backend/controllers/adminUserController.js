@@ -89,7 +89,8 @@ export const getAdminUsers = async (req, res) => {
     const [users] = await pool.execute(
       `SELECT id, username, email, role, status, gems, pity_count,
               stamina, created_at, last_login_at, failed_login_attempts, locked_until,
-              (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked
+              (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked,
+              GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, locked_until)) AS lock_remaining_seconds
        FROM users
        ${whereClause}
        ORDER BY id DESC
@@ -115,7 +116,8 @@ export const getAdminUserDetails = async (req, res) => {
       `SELECT id, username, email, role, status, gems, pity_count,
               highest_boss_floor, stamina, created_at, updated_at, last_login_at,
               password_changed_at, failed_login_attempts, locked_until,
-              (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked
+              (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked,
+              GREATEST(0, TIMESTAMPDIFF(SECOND, CURRENT_TIMESTAMP, locked_until)) AS lock_remaining_seconds
        FROM users
        WHERE id = ?`,
       [userId]
@@ -310,7 +312,7 @@ export const updateAdminUserResources = async (req, res) => {
     }
 
     await connection.execute(
-      'UPDATE users SET gems = ?, stamina = ? WHERE id = ?',
+      'UPDATE users SET gems = ?, stamina = ?, updated_at = updated_at WHERE id = ?',
       [gems, stamina, userId]
     );
     await writeAuditLog(connection, {
