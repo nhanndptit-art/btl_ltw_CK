@@ -12,6 +12,7 @@
 **/dist/
 **/build/
 **/coverage/
+backend/uploads/
 
 # Logs
 *.log

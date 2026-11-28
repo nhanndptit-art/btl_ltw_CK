@@ -31,7 +31,9 @@ CREATE TABLE IF NOT EXISTS cards (
     weight INT NOT NULL DEFAULT 100,
     base_atk INT NOT NULL DEFAULT 100,
     base_def INT NOT NULL DEFAULT 100,
-    image_url VARCHAR(255) NOT NULL
+    image_url VARCHAR(255) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    UNIQUE KEY uq_cards_name (name)
 );
 
 -- 3. Bảng Kho đồ người dùng (Cộng dồn quantity nếu quay trùng thẻ)

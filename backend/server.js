@@ -1,6 +1,7 @@
 // File: backend/server.js
 import express from 'express';
 import cors from 'cors';
+import { fileURLToPath } from 'node:url';
 import apiRoutes from './routes/apiRoutes.js';
 import { startGachaLogCleanupJob } from './jobs/gachaLogCleanup.js';
 
@@ -16,6 +17,14 @@ app.use(
 );
 
 app.use(express.json());
+app.use(
+  '/uploads/cards',
+  express.static(fileURLToPath(new URL('./uploads/cards/', import.meta.url)), {
+    fallthrough: false,
+    index: false,
+    maxAge: '1d',
+  })
+);
 
 // Route kiểm tra nhanh trạng thái kết nối
 app.get('/api/health', (req, res) => {

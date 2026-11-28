@@ -1,19 +1,6 @@
 import React from 'react';
 import './CardItem.css';
-
-const cardAssetUrls = import.meta.glob('../assets/cards/*', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-});
-
-const getCardImageUrl = (imageUrl) => {
-  if (!imageUrl) return imageUrl;
-
-  const fileName = imageUrl.split('/').pop();
-  const assetPath = `../assets/cards/${fileName}`;
-  return cardAssetUrls[assetPath] || imageUrl;
-};
+import { getCardImageUrl } from '../utils/cardImage.js';
 
 const CardItem = ({ card, showQuantity = false }) => {
   const rarityClass = `rarity-${card.rarity.toLowerCase()}`;
