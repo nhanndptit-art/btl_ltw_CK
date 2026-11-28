@@ -78,7 +78,9 @@ export const rollGacha = async (req, res) => {
 
     // 2. Lấy toàn bộ danh sách thẻ bài từ DB và gom nhóm theo Rarity
     const [allCards] = await connection.execute(
-      'SELECT id, name, title, rarity, element, weight, base_atk, base_def, image_url FROM cards'
+      `SELECT id, name, title, rarity, element, weight, base_atk, base_def, image_url
+       FROM cards
+       WHERE is_active = 1`
     );
 
     const cardPools = {

@@ -15,6 +15,7 @@ import BossPage from './pages/BossPage.jsx';
 
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import AdminAccountsPage from './pages/AdminAccountsPage.jsx';
+import AdminCardsPage from './pages/AdminCardsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import './App.css';
 
@@ -44,7 +45,7 @@ const App = () => {
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<AdminAccountsPage />} />
-          <Route path="/admin/cards" element={<AdminDashboardPage />} />
+          <Route path="/admin/cards" element={<AdminCardsPage />} />
         </Route>
       </Route>
 

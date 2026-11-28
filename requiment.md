@@ -49,6 +49,18 @@ Sau khi đã cập nhật schema tài khoản, tạo bảng nhật ký quản tr
 Get-Content .\database-migration-admin-users.sql | mysql -u root -p
 ```
 
+## Migration cho trang quản lý thẻ bài
+
+Sau khi cập nhật schema, chạy migration để giữ trạng thái phát hành cho các thẻ cũ và
+đảm bảo tên thẻ không bị trùng:
+
+```powershell
+Get-Content .\database-migration-admin-cards.sql | mysql -u root -p
+```
+
+Ảnh thẻ tải lên được lưu trong `backend/uploads/cards` và được phục vụ qua backend.
+Thư mục upload không được commit lên Git.
+
 ## 3. Cấu hình backend
 
 Mở terminal tại thư mục gốc:

@@ -5,6 +5,12 @@ import { getUserInventory } from '../controllers/inventoryController.js';
 import { battleBoss, getBossFloors } from '../controllers/bossController.js';
 import { getAdminDashboard } from '../controllers/adminController.js';
 import {
+  createAdminCard,
+  getAdminCards,
+  updateAdminCard,
+  updateAdminCardStatus,
+} from '../controllers/adminCardController.js';
+import {
   clearAdminUserLoginLock,
   getAdminAuditLogs,
   getAdminUserDetails,
@@ -14,6 +20,7 @@ import {
   updateAdminUserStatus,
 } from '../controllers/adminUserController.js';
 import { verifyToken, authorizeRoles, verifySelfOrAdmin } from '../middleware/authMiddleware.js';
+import { uploadCardImage } from '../middleware/cardUpload.js';
 import pool from '../config/db.js';
 
 const router = express.Router();
@@ -32,6 +39,27 @@ router.post('/bosses/:floorNumber/battle', verifyToken, verifySelfOrAdmin, battl
 
 // 3. Admin Routes
 router.get('/admin/dashboard', verifyToken, authorizeRoles('admin'), getAdminDashboard);
+router.get('/admin/cards', verifyToken, authorizeRoles('admin'), getAdminCards);
+router.post(
+  '/admin/cards',
+  verifyToken,
+  authorizeRoles('admin'),
+  uploadCardImage,
+  createAdminCard
+);
+router.patch(
+  '/admin/cards/:cardId',
+  verifyToken,
+  authorizeRoles('admin'),
+  uploadCardImage,
+  updateAdminCard
+);
+router.patch(
+  '/admin/cards/:cardId/status',
+  verifyToken,
+  authorizeRoles('admin'),
+  updateAdminCardStatus
+);
 router.get('/admin/users', verifyToken, authorizeRoles('admin'), getAdminUsers);
 router.get('/admin/users/:userId', verifyToken, authorizeRoles('admin'), getAdminUserDetails);
 router.patch('/admin/users/:userId/role', verifyToken, authorizeRoles('admin'), updateAdminUserRole);
